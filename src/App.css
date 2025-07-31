@@ -1,0 +1,169 @@
+.App {
+    text-align: center;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .app-header {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .app-header h1 {
+    color: #333;
+    margin: 0 0 10px 0;
+  }
+  
+  .app-header p {
+    color: #666;
+    margin: 0 0 20px 0;
+  }
+  
+  .user-controls {
+    display: inline-block;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+  }
+  
+  .user-controls label {
+    margin-right: 10px;
+    font-weight: bold;
+  }
+  
+  .user-controls select {
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  
+  .app-main {
+    text-align: left;
+  }
+  
+  .app-footer {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+    font-size: 14px;
+  }
+  
+  /* Grid Example Styles */
+  .grid-example {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .controls {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  .mode-selector {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .mode-label {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .mode-dropdown {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    font-size: 14px;
+  }
+  
+  .mode-info {
+    margin-top: 10px;
+  }
+  
+  .mode-info small {
+    color: #666;
+    font-style: italic;
+  }
+  
+  .error-message {
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border-left: 4px solid #c62828;
+  }
+  
+  .mode-info {
+    background-color: #e3f2fd;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    border-left: 4px solid #2196f3;
+  }
+  
+  .mode-info div {
+    margin: 5px 0;
+    font-size: 14px;
+  }
+  
+  .grid-container {
+    height: 400px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  /* ag-Grid customizations */
+  .ag-theme-alpine {
+    --ag-header-background-color: #f5f5f5;
+    --ag-odd-row-background-color: #fcfcfc;
+    --ag-row-hover-color: #e8f4fd;
+  }
+  
+  .ag-theme-alpine .ag-header-cell-text {
+    font-weight: 600;
+  }
+  
+  /* Loading and status indicators */
+  .ag-cell-loading {
+    background-color: #fff3cd !important;
+    color: #856404;
+  }
+  
+  .ag-cell-error {
+    background-color: #f8d7da !important;
+    color: #721c24;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .App {
+      padding: 10px;
+    }
+    
+    .mode-selector {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .grid-container {
+      height: 300px;
+    }
+    
+    .controls {
+      padding: 10px;
+    }
+  }
