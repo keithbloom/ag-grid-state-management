@@ -1,6 +1,6 @@
 # ag-Grid State Management System
 
-A React state management system for ag-Grid with mode-based column configurations and async operations, following the open/closed principle.
+A React state management system for ag-Grid with mode-based column configurations and async operations, following the open/closed principle. Built with **Vite** for fast development and modern tooling.
 
 ## Features
 
@@ -11,37 +11,78 @@ A React state management system for ag-Grid with mode-based column configuration
 - ✅ Role-based mode permissions
 - ✅ Race condition protection
 - ✅ TypeScript support
+- ✅ **Vite** for lightning-fast development
+- ✅ **ESLint** for code quality
+- ✅ **Hot Module Replacement (HMR)**
 
 ## Quick Start
 
 ```bash
+# Install dependencies
 npm install
-npm start
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
 ```
 
 ## Project Structure
 
 ```
-src/
-├── hooks/
-│   ├── useGridStateManager.ts      # Core state management hook
-│   ├── useInventoryModeHandlers.ts # Inventory-specific handlers
-│   └── useModePermissions.ts       # Permission-based mode management
-├── components/
-│   ├── GridExample.tsx             # Main example component
-│   └── ModeSelector.tsx            # Mode switching component
-├── types/
-│   └── grid.ts                     # TypeScript interfaces
-├── App.tsx                         # Main app component
-└── index.tsx                       # Entry point
+├── public/                     # Static assets
+├── src/
+│   ├── hooks/
+│   │   ├── useGridStateManager.ts      # Core state management hook
+│   │   ├── useInventoryModeHandlers.ts # Inventory-specific handlers
+│   │   └── useModePermissions.ts       # Permission-based mode management
+│   ├── components/
+│   │   ├── GridExample.tsx             # Main example component
+│   │   └── ModeSelector.tsx            # Mode switching component
+│   ├── types/
+│   │   └── grid.ts                     # TypeScript interfaces
+│   ├── App.tsx                         # Main app component
+│   ├── App.css                         # Styling
+│   ├── main.tsx                        # Entry point
+│   └── vite-env.d.ts                   # Vite type definitions
+├── index.html                          # HTML template
+├── vite.config.ts                      # Vite configuration
+├── tsconfig.json                       # TypeScript configuration
+├── tsconfig.node.json                  # Node TypeScript config
+├── .eslintrc.cjs                       # ESLint configuration
+└── package.json                        # Dependencies and scripts
 ```
+
+## Development
+
+### Commands
+
+- `npm run dev` - Start development server with HMR
+- `npm run build` - Build for production (includes TypeScript compilation)
+- `npm run preview` - Preview production build locally
+- `npm run lint` - Run ESLint to check code quality
+
+### Development Features
+
+- **⚡ Vite**: Lightning-fast cold starts and instant HMR
+- **🔧 TypeScript**: Full type checking during development
+- **📝 ESLint**: Code quality and consistency checks
+- **🎯 Path Aliases**: Clean imports with `@/` prefix
+- **🔄 Hot Reload**: Changes reflect instantly without losing state
 
 ## Usage
 
 ### Basic Setup
 
 ```typescript
-import { useGridStateManager } from './hooks/useGridStateManager';
+import { useGridStateManager } from '@/hooks/useGridStateManager';
 import { AgGridReact } from 'ag-grid-react';
 
 const MyGrid = () => {
@@ -74,7 +115,7 @@ gridManager.registerColumnHandler({
   modes: ['reporting'],
   handler: async (rowData, newValue) => {
     // Reporting-specific logic
-    return { formattedTotal: `$${newValue.toFixed(2)}` };
+    return { formattedTotal: `${newValue.toFixed(2)}` };
   }
 });
 ```
@@ -101,6 +142,16 @@ const useCustomHandlers = (gridManager) => {
 - **Advanced Mode**: Extended columns with margin calculations and SKU lookup
 - **Readonly Mode**: View-only mode for reports
 - **Inventory Mode**: Stock management with reorder triggers
+
+## Vite Configuration
+
+The project uses Vite with the following optimizations:
+
+- **React Plugin**: Fast refresh and JSX transformation
+- **TypeScript**: Full type checking and compilation
+- **Path Aliases**: `@/` points to `src/` directory
+- **Development Server**: Runs on port 3000 with auto-open
+- **Build Optimization**: Source maps enabled for debugging
 
 ## API Reference
 
@@ -145,6 +196,16 @@ interface ModeConfig {
   columns: string[];
   defaultColumnProps?: Partial<ColumnConfig>;
 }
+```
+
+## Production Deployment
+
+```bash
+# Build the project
+npm run build
+
+# The `dist` folder contains the production-ready files
+# Deploy the contents of `dist` to your hosting provider
 ```
 
 ## License

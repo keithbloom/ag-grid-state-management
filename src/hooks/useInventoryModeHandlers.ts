@@ -74,11 +74,11 @@ export const useInventoryModeHandlers = (
       headerName: 'Current Stock',
       modes: ['inventory'],
       editable: false,
-      cellRenderer: (params: any) => {
+      width: 140,
+      cellClass: (params: any) => {
         const value = params.value || 0;
         const reorderLevel = params.data.reorderLevel || 20;
-        const color = value < reorderLevel ? '#ff4444' : '#44aa44';
-        return `<span style="color: ${color}; font-weight: bold;">${value}</span>`;
+        return value < reorderLevel ? 'ag-cell-low-stock' : 'ag-cell-in-stock';
       }
     });
 
@@ -86,7 +86,8 @@ export const useInventoryModeHandlers = (
       field: 'reorderLevel',
       headerName: 'Reorder Level',
       modes: ['inventory'],
-      editable: true
+      editable: true,
+      width: 140
     });
 
     gridManager.registerColumnConfig({
@@ -94,16 +95,10 @@ export const useInventoryModeHandlers = (
       headerName: 'Status',
       modes: ['inventory'],
       editable: false,
-      cellRenderer: (params: any) => {
+      width: 150,
+      cellClass: (params: any) => {
         const status = params.value || 'Unknown';
-        const colors = {
-          'In Stock': '#44aa44',
-          'Low Stock': '#ff8800',
-          'Reorder Triggered': '#ff4444',
-          'Unknown': '#888888'
-        };
-        const color = colors[status as keyof typeof colors] || '#888888';
-        return `<span style="color: ${color}; font-weight: bold;">● ${status}</span>`;
+        return `ag-cell-status-${status.toLowerCase().replace(' ', '-')}`;
       }
     });
 
@@ -111,12 +106,13 @@ export const useInventoryModeHandlers = (
       field: 'lastRestocked',
       headerName: 'Last Restocked',
       modes: ['inventory'],
-      editable: false
+      editable: false,
+      width: 150
     });
 
     return () => {
       gridManager.unregisterColumnHandler('sku');
       gridManager.unregisterColumnHandler('reorderLevel');
     };
-  }, [gridManager]);
+  }, []); // Empty dependency array - only run once
 };

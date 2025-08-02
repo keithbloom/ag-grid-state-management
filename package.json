@@ -2,18 +2,19 @@
     "name": "ag-grid-state-management",
     "version": "1.0.0",
     "description": "React state management system for ag-Grid with mode-based configurations",
-    "main": "src/index.tsx",
+    "type": "module",
     "scripts": {
-      "start": "react-scripts start",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject"
+      "dev": "vite",
+      "build": "tsc && vite build",
+      "preview": "vite preview",
+      "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
     },
     "keywords": [
       "react",
       "ag-grid",
       "state-management",
-      "typescript"
+      "typescript",
+      "vite"
     ],
     "author": "",
     "license": "MIT",
@@ -24,21 +25,15 @@
       "ag-grid-community": "^31.0.0"
     },
     "devDependencies": {
-      "@types/react": "^18.2.0",
-      "@types/react-dom": "^18.2.0",
-      "react-scripts": "5.0.1",
-      "typescript": "^5.0.0"
-    },
-    "browserslist": {
-      "production": [
-        ">0.2%",
-        "not dead",
-        "not op_mini all"
-      ],
-      "development": [
-        "last 1 chrome version",
-        "last 1 firefox version",
-        "last 1 safari version"
-      ]
+      "@types/react": "^18.2.43",
+      "@types/react-dom": "^18.2.17",
+      "@typescript-eslint/eslint-plugin": "^6.14.0",
+      "@typescript-eslint/parser": "^6.14.0",
+      "@vitejs/plugin-react": "^4.2.1",
+      "eslint": "^8.55.0",
+      "eslint-plugin-react-hooks": "^4.6.0",
+      "eslint-plugin-react-refresh": "^0.4.5",
+      "typescript": "^5.2.2",
+      "vite": "^5.0.8"
     }
   }

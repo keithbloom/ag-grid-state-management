@@ -1,23 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useCallback } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 
 // Import ag-Grid CSS
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-quartz.css';
 
-import { useGridStateManager } from '../hooks/useGridStateManager';
-import { useInventoryModeHandlers } from '../hooks/useInventoryModeHandlers';
+import { useSimplifiedGridManager } from '../hooks/useSimplifiedGridManager';
 import { ModeSelector } from './ModeSelector';
 
-export const GridExample: React.FC = () => {
-  const gridManager = useGridStateManager([], 'editing');
+export const FixedGridExample: React.FC = () => {
+  const gridManager = useSimplifiedGridManager([], 'editing');
 
-  // Add inventory-specific handlers
-  useInventoryModeHandlers(gridManager);
-
-  // Setup modes and column configurations
+  // Setup modes and column configurations - ONLY ONCE
   useEffect(() => {
-    // Register different modes
+    console.log('Setting up modes and columns...');
+    
+    // Register all modes
     gridManager.registerMode({
       id: 'editing',
       name: 'Editing Mode',
@@ -39,7 +37,17 @@ export const GridExample: React.FC = () => {
       defaultColumnProps: { editable: true, sortable: true }
     });
 
-    // Register column configurations
+    gridManager.registerMode({
+      id: 'inventory',
+      name: 'Inventory Management',
+      columns: ['sku', 'name', 'currentStock', 'reorderLevel', 'supplier', 'lastRestocked', 'status'],
+      defaultColumnProps: { 
+        editable: true,
+        sortable: true 
+      }
+    });
+
+    // Register ALL column configurations
     const columnConfigs = [
       {
         field: 'name',
@@ -54,6 +62,7 @@ export const GridExample: React.FC = () => {
         modes: ['editing', 'readonly', 'advanced'],
         valueFormatter: (params: any) => params.value ? `${params.value.toFixed(2)}` : '',
         width: 120,
+        minWidth: 100,
         modeSpecificProps: {
           'readonly': { editable: false },
           'advanced': { headerName: 'Unit Price ($)' }
@@ -63,7 +72,8 @@ export const GridExample: React.FC = () => {
         field: 'quantity',
         headerName: 'Quantity',
         modes: ['editing', 'readonly', 'advanced'],
-        width: 120
+        width: 120,
+        minWidth: 100
       },
       {
         field: 'sku',
@@ -127,30 +137,67 @@ export const GridExample: React.FC = () => {
         modes: ['advanced', 'inventory'],
         editable: false,
         width: 150
+      },
+      // Inventory-specific columns
+      {
+        field: 'currentStock',
+        headerName: 'Current Stock',
+        modes: ['inventory'],
+        editable: false,
+        width: 140,
+        cellClass: (params: any) => {
+          const value = params.value || 0;
+          const reorderLevel = params.data.reorderLevel || 20;
+          return value < reorderLevel ? 'ag-cell-low-stock' : 'ag-cell-in-stock';
+        }
+      },
+      {
+        field: 'reorderLevel',
+        headerName: 'Reorder Level',
+        modes: ['inventory'],
+        editable: true,
+        width: 140
+      },
+      {
+        field: 'status',
+        headerName: 'Status',
+        modes: ['inventory'],
+        editable: false,
+        width: 150,
+        cellClass: (params: any) => {
+          const status = params.value || 'Unknown';
+          return `ag-cell-status-${status.toLowerCase().replace(' ', '-')}`;
+        }
+      },
+      {
+        field: 'lastRestocked',
+        headerName: 'Last Restocked',
+        modes: ['inventory'],
+        editable: false,
+        width: 150
       }
     ];
 
     columnConfigs.forEach(config => gridManager.registerColumnConfig(config));
 
-  }, [gridManager]);
+  }, []); // Empty dependency array - only run once
 
-  // Register handlers with mode-specific behavior
+  // Register ALL handlers - ONLY ONCE
   useEffect(() => {
-    // Price handler - behaves differently in different modes
+    console.log('Setting up handlers...');
+    
+    // Price handler with mode-specific logic
     gridManager.registerColumnHandler({
       columnId: 'price',
-      modes: ['editing', 'advanced'], // Not active in readonly mode
-      handler: async (rowData, newPrice) => {
+      modes: ['editing', 'advanced'],
+      handler: async (rowData: any, newPrice: number) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         const quantity = rowData.quantity || 1;
         const total = newPrice * quantity;
         
-        // Get current mode from the gridManager at execution time
-        const currentMode = gridManager.currentMode;
-        
         // Advanced mode includes margin calculation
-        if (currentMode === 'advanced') {
+        if (gridManager.currentMode === 'advanced') {
           const cost = rowData.cost || newPrice * 0.6; // Assume 40% margin if cost unknown
           const margin = ((newPrice - cost) / newPrice) * 100;
           
@@ -168,15 +215,14 @@ export const GridExample: React.FC = () => {
           tax: total * 0.08,
           grandTotal: total * 1.08
         };
-      },
-      dependencies: ['total', 'tax']
+      }
     });
 
     // Quantity handler
     gridManager.registerColumnHandler({
       columnId: 'quantity',
       modes: ['editing', 'advanced'],
-      handler: async (rowData, newQuantity) => {
+      handler: async (rowData: any, newQuantity: number) => {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         const price = rowData.price || 0;
@@ -194,19 +240,32 @@ export const GridExample: React.FC = () => {
     // SKU handler - only active in advanced mode
     gridManager.registerColumnHandler({
       columnId: 'sku',
-      modes: ['advanced'],
-      handler: async (rowData, newSku) => {
-        // Simulate API call for product details
+      modes: ['advanced', 'inventory'],
+      handler: async (rowData: any, newSku: string) => {
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Mock API response
-        const productData = {
-          cost: Math.random() * 50 + 20,
-          supplier: ['Supplier A', 'Supplier B', 'Supplier C'][Math.floor(Math.random() * 3)],
-          category: 'Electronics'
-        };
-        
-        return productData;
+        if (gridManager.currentMode === 'inventory') {
+          // Inventory mode - stock data
+          const stockData = {
+            currentStock: Math.floor(Math.random() * 100) + 10,
+            lastRestocked: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            supplier: ['Supplier A', 'Supplier B', 'Supplier C'][Math.floor(Math.random() * 3)]
+          };
+          
+          const status = stockData.currentStock < (rowData.reorderLevel || 20) ? 'Low Stock' : 'In Stock';
+          
+          return {
+            ...stockData,
+            status
+          };
+        } else {
+          // Advanced mode - product data
+          return {
+            cost: Math.random() * 50 + 20,
+            supplier: ['Supplier A', 'Supplier B', 'Supplier C'][Math.floor(Math.random() * 3)],
+            category: 'Electronics'
+          };
+        }
       }
     });
 
@@ -214,16 +273,13 @@ export const GridExample: React.FC = () => {
     gridManager.registerColumnHandler({
       columnId: 'discountCode',
       modes: ['editing', 'advanced'],
-      handler: async (rowData, discountCode) => {
+      handler: async (rowData: any, discountCode: string) => {
         if (!discountCode) return { discount: 0 };
         
         await new Promise(resolve => setTimeout(resolve, 600));
         
-        // Get current mode at execution time
-        const currentMode = gridManager.currentMode;
-        
         // Advanced mode has more sophisticated discount logic
-        if (currentMode === 'advanced') {
+        if (gridManager.currentMode === 'advanced') {
           const baseDiscount = rowData.total * 0.1; // 10% base
           const volumeBonus = rowData.quantity > 5 ? rowData.total * 0.05 : 0; // 5% volume bonus
           const discount = baseDiscount + volumeBonus;
@@ -243,17 +299,44 @@ export const GridExample: React.FC = () => {
       }
     });
 
+    // Reorder level handler - inventory mode specific
+    gridManager.registerColumnHandler({
+      columnId: 'reorderLevel',
+      modes: ['inventory'],
+      handler: async (rowData: any, newLevel: number) => {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        const currentStock = rowData.currentStock || 0;
+        let status = currentStock < newLevel ? 'Low Stock' : 'In Stock';
+        let updates: any = { status };
+        
+        // In inventory mode, trigger automatic reorder if critically low
+        if (currentStock < newLevel * 0.5) {
+          console.log(`Auto-reordering ${rowData.sku}: ${newLevel * 2} units`);
+          
+          updates = {
+            status: 'Reorder Triggered',
+            lastReorderDate: new Date().toISOString().split('T')[0],
+            pendingOrder: newLevel * 2
+          };
+        }
+        
+        return updates;
+      }
+    });
+
     return () => {
       gridManager.unregisterColumnHandler('price');
       gridManager.unregisterColumnHandler('quantity');
       gridManager.unregisterColumnHandler('sku');
       gridManager.unregisterColumnHandler('discountCode');
+      gridManager.unregisterColumnHandler('reorderLevel');
     };
   }, []); // Empty dependency array - only run once
 
-  // Example data
+  // Set initial data - ONLY ONCE
   useEffect(() => {
-    console.log('Setting initial data...'); // You can add this to verify it only runs once
+    console.log('Setting initial data...');
     gridManager.setData([
       { 
         id: '1', 
@@ -261,7 +344,9 @@ export const GridExample: React.FC = () => {
         price: 1299.99, 
         quantity: 2, 
         sku: 'LTP001',
-        cost: 800 
+        cost: 800,
+        reorderLevel: 15,
+        currentStock: 25
       },
       { 
         id: '2', 
@@ -269,7 +354,9 @@ export const GridExample: React.FC = () => {
         price: 49.99, 
         quantity: 1, 
         sku: 'WMS002',
-        cost: 25 
+        cost: 25,
+        reorderLevel: 50,
+        currentStock: 12
       },
       { 
         id: '3', 
@@ -277,16 +364,40 @@ export const GridExample: React.FC = () => {
         price: 79.99, 
         quantity: 6, 
         sku: 'UCH003',
-        cost: 35 
+        cost: 35,
+        reorderLevel: 20,
+        currentStock: 45
       }
     ]);
   }, []); // Empty dependency array - only run once
 
-  // Loading cell renderer
-  const loadingCellRenderer = (params: any) => {
-    const isLoading = gridManager.loading.has(params.data.id);
-    return isLoading ? '⏳ Calculating...' : params.value;
-  };
+  // Stabilize all ag-Grid props
+  const defaultColDef = useMemo(() => ({
+    resizable: true,
+    sortable: true,
+    filter: true,
+    floatingFilter: false
+  }), []);
+
+  // Memoize column definitions
+  const columnDefs = useMemo(() => {
+    const baseDefs = gridManager.getColumnDefsForMode();
+    
+    return baseDefs.map(colDef => ({
+      ...colDef,
+      cellRenderer: ['price', 'quantity', 'total', 'sku', 'reorderLevel'].includes(colDef.field) 
+        ? (params: any) => {
+            const isLoading = gridManager.loading.has(params.data?.id);
+            return isLoading ? '⏳ Calculating...' : params.value;
+          }
+        : colDef.cellRenderer
+    }));
+  }, [gridManager.currentMode, gridManager.availableModes, gridManager.loading]);
+
+  // Stabilize the cell value changed handler
+  const onCellValueChanged = useCallback((params: any) => {
+    gridManager.onCellValueChanged(params);
+  }, [gridManager.onCellValueChanged]);
 
   return (
     <div className="grid-example">
@@ -309,7 +420,7 @@ export const GridExample: React.FC = () => {
       {/* Current mode info */}
       <div className="mode-info">
         <div><strong>Current Mode:</strong> {gridManager.currentMode}</div>
-        <div><strong>Active Columns:</strong> {gridManager.getColumnDefsForMode().map(col => col.field).join(', ')}</div>
+        <div><strong>Active Columns:</strong> {columnDefs.map(col => col.field).join(', ')}</div>
         <div><strong>Active Handlers:</strong> {Array.from(gridManager.getActiveHandlers().keys()).join(', ')}</div>
       </div>
       
@@ -317,19 +428,9 @@ export const GridExample: React.FC = () => {
       <div className="ag-theme-quartz grid-container">
         <AgGridReact
           rowData={gridManager.data}
-          columnDefs={gridManager.getColumnDefsForMode().map(colDef => ({
-            ...colDef,
-            cellRenderer: ['price', 'quantity', 'total'].includes(colDef.field) 
-              ? loadingCellRenderer 
-              : colDef.cellRenderer
-          }))}
-          onCellValueChanged={gridManager.onCellValueChanged}
-          defaultColDef={{
-            resizable: true,
-            sortable: true,
-            filter: true,
-            floatingFilter: false
-          }}
+          columnDefs={columnDefs}
+          onCellValueChanged={onCellValueChanged}
+          defaultColDef={defaultColDef}
           animateRows={true}
           enableCellChangeFlash={true}
           suppressMenuHide={true}
