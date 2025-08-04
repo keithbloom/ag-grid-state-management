@@ -15,6 +15,7 @@ import { defaultParsersValidators } from '../utils/defaultParsersValidators';
 
 // Enhanced reducer with cell-level errors
 const gridReducer = (state: GridState, action: GridAction): GridState => {
+  console.log(`handling action ${action.type}`)
   switch (action.type) {
     case 'SET_DATA':
       return {
